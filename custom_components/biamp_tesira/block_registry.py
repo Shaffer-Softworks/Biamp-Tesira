@@ -17,10 +17,13 @@ from .const import (
     BLOCK_AUDIO_METER,
     BLOCK_LEVEL,
     BLOCK_LOGIC_STATE,
+    BLOCK_MATRIX_CROSSPOINT,
+    BLOCK_MATRIX_CROSSPOINT_LEVEL,
     BLOCK_MUTE,
     BLOCK_PRESET,
     BLOCK_SIGNAL_PRESENT,
     BLOCK_SOURCE_SELECTOR,
+    MATRIX_BLOCK_TYPES,
 )
 
 
@@ -82,6 +85,20 @@ BLOCK_DEFINITIONS: dict[str, BlockDefinition] = {
         Platform.SENSOR,
         "level",
     ),
+    BLOCK_MATRIX_CROSSPOINT: BlockDefinition(
+        BLOCK_MATRIX_CROSSPOINT,
+        "Matrix Crosspoint",
+        Platform.SWITCH,
+        "crosspointLevelState",
+        supports_channel=False,
+    ),
+    BLOCK_MATRIX_CROSSPOINT_LEVEL: BlockDefinition(
+        BLOCK_MATRIX_CROSSPOINT_LEVEL,
+        "Matrix Crosspoint Level",
+        Platform.NUMBER,
+        "crosspointLevel",
+        supports_channel=False,
+    ),
 }
 
 
@@ -135,10 +152,31 @@ class BlockEntityConfig:
         """Stable token for TTP subscribe."""
         return f"ha_{self.unique_id}"[:32]
 
+    def uses_matrix_indices(self) -> bool:
+        """Return True when TTP commands use input/output crosspoint indices."""
+        return self.block_type in MATRIX_BLOCK_TYPES
+
+    def subscription_indices(self) -> tuple[int, ...]:
+        """Return TTP subscribe index arguments for this block."""
+        if self.uses_matrix_indices():
+            if self.matrix_input is None or self.matrix_output is None:
+                raise ValueError(
+                    f"{self.block_type} requires matrix_input and matrix_output"
+                )
+            return (self.matrix_input, self.matrix_output)
+        return (self.channel,)
+
     def _build(self, verb: str, value: str | None = None) -> str:
         attr = self.definition.default_attribute
         parts = [self.format_instance_tag(), verb, attr]
-        if self.definition.supports_channel:
+        if self.uses_matrix_indices():
+            if self.matrix_input is None or self.matrix_output is None:
+                raise ValueError(
+                    f"{self.block_type} requires matrix_input and matrix_output"
+                )
+            parts.append(str(self.matrix_input))
+            parts.append(str(self.matrix_output))
+        elif self.definition.supports_channel:
             parts.append(str(self.channel))
         if self.block_type == BLOCK_SIGNAL_PRESENT:
             parts[2] = "present"
@@ -181,6 +219,47 @@ class BlockEntityConfig:
 def block_type_labels() -> list[tuple[str, str]]:
     """Return (block_type, label) for selectors."""
     return [(k, v.label) for k, v in BLOCK_DEFINITIONS.items()]
+
+
+def block_requires_matrix(block_type: str) -> bool:
+    """Return True when the block type maps to a matrix mixer crosspoint."""
+    return block_type in MATRIX_BLOCK_TYPES
+
+
+def block_from_flow_input(data: dict[str, Any]) -> BlockEntityConfig:
+    """Build a block entity from config/options flow input."""
+    block_type = str(data["block_type"])
+    instance_tag = str(data["instance_tag"])
+    name = str(data.get("name") or f"{block_type} {instance_tag}")
+    channel = int(data.get("channel", 1))
+    subscribe = bool(data.get("subscribe", False))
+    preset_raw = data.get("preset_id")
+    preset_id = int(preset_raw) if preset_raw not in (None, "") else None
+
+    matrix_input: int | None = None
+    matrix_output: int | None = None
+    if block_requires_matrix(block_type):
+        matrix_input = _optional_int(data.get(ATTR_MATRIX_INPUT))
+        matrix_output = _optional_int(data.get(ATTR_MATRIX_OUTPUT))
+        if matrix_input is None or matrix_output is None:
+            raise ValueError("matrix_input and matrix_output are required")
+        unique_id = (
+            f"{block_type}_{instance_tag}_{matrix_input}_{matrix_output}"
+        ).replace(" ", "_")
+    else:
+        unique_id = f"{block_type}_{instance_tag}_{channel}".replace(" ", "_")
+
+    return BlockEntityConfig(
+        unique_id=unique_id,
+        name=name,
+        block_type=block_type,
+        instance_tag=instance_tag,
+        channel=channel,
+        subscribe=subscribe,
+        matrix_input=matrix_input,
+        matrix_output=matrix_output,
+        preset_id=preset_id,
+    )
 
 
 def _optional_int(value: Any) -> int | None:

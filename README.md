@@ -70,6 +70,10 @@ During setup (or **Configure → Options → Add block entity**), map common blo
 | `preset` | `button` (`DEVICE recallPreset`) |
 | `signal_present_meter` | `binary_sensor` |
 | `audio_meter` | `sensor` (dB) |
+| `matrix_crosspoint` | `switch` (crosspoint on/off via `crosspointLevelState`) |
+| `matrix_crosspoint_level` | `number` (crosspoint gain in dB via `crosspointLevel`) |
+
+For matrix blocks, set **matrix_input** and **matrix_output** (TTP row/column indices) instead of channel.
 
 Enable **Live updates** to use TTP `subscribe` (polling interval applies when off).
 
