@@ -7,7 +7,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .block_registry import BLOCK_LOGIC_STATE, BLOCK_MUTE, BlockEntityConfig
+from .block_registry import (
+    BLOCK_LOGIC_STATE,
+    BLOCK_MATRIX_CROSSPOINT,
+    BLOCK_MUTE,
+    BlockEntityConfig,
+)
 from .const import DOMAIN, ENTITY_TYPE_SWITCH
 from .coordinator import BiampTesiraCoordinator
 from .entity import BiampTesiraBlockEntity, BiampTesiraControlEntity
@@ -27,7 +32,7 @@ async def async_setup_entry(
         if point.entity_type == ENTITY_TYPE_SWITCH
     ]
     for block in coordinator.block_entities:
-        if block.block_type in (BLOCK_MUTE, BLOCK_LOGIC_STATE):
+        if block.block_type in (BLOCK_MUTE, BLOCK_LOGIC_STATE, BLOCK_MATRIX_CROSSPOINT):
             entities.append(BiampTesiraBlockSwitch(coordinator, block))
     async_add_entities(entities)
 

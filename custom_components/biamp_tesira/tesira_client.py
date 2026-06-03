@@ -125,20 +125,22 @@ class TesiraClient:
         self,
         instance_tag: str,
         attribute: str,
-        channel: int,
+        index1: int,
         token: str,
         interval_ms: int,
         *,
+        index2: int | None = None,
         callback: SubscriptionCallback | None = None,
     ) -> TesiraResponse:
         """Subscribe to attribute updates."""
         if callback:
             self.register_subscription_callback(token, callback)
         tag = _quote_tag(instance_tag)
-        cmd = (
-            f"{tag} subscribe {attribute.lower()} {channel} "
-            f"{token} {interval_ms}"
-        )
+        parts = [tag, "subscribe", attribute.lower(), str(index1)]
+        if index2 is not None:
+            parts.append(str(index2))
+        parts.extend([token, str(interval_ms)])
+        cmd = " ".join(parts)
         return await self.send_command(cmd)
 
     async def unsubscribe(self, token: str) -> TesiraResponse:

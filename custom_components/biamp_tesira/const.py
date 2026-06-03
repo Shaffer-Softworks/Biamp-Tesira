@@ -50,6 +50,12 @@ BLOCK_SOURCE_SELECTOR = "source_selector"
 BLOCK_PRESET = "preset"
 BLOCK_SIGNAL_PRESENT = "signal_present_meter"
 BLOCK_AUDIO_METER = "audio_meter"
+BLOCK_MATRIX_CROSSPOINT = "matrix_crosspoint"
+BLOCK_MATRIX_CROSSPOINT_LEVEL = "matrix_crosspoint_level"
+
+MATRIX_BLOCK_TYPES = frozenset(
+    {BLOCK_MATRIX_CROSSPOINT, BLOCK_MATRIX_CROSSPOINT_LEVEL}
+)
 
 PLATFORMS = [
     "binary_sensor",

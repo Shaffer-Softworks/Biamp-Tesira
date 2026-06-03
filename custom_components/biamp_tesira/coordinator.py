@@ -86,12 +86,14 @@ class BiampTesiraCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if token in self._subscribed:
                 continue
             try:
+                indices = block.subscription_indices()
                 await self.client.subscribe(
                     block.instance_tag,
                     block.definition.default_attribute,
-                    block.channel,
+                    indices[0],
                     token,
                     self.subscription_interval,
+                    index2=indices[1] if len(indices) > 1 else None,
                     callback=_callback,
                 )
                 self._subscribed.add(token)

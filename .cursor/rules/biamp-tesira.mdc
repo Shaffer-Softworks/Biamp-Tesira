@@ -1,0 +1,34 @@
+---
+description: Biamp Tesira HA integration — architecture, constraints, and repo state
+alwaysApply: true
+---
+
+# Biamp Tesira (Home Assistant)
+
+HACS integration: **Biamp Tesira DSP**, domain `biamp_tesira`, TTP over SSH/Telnet.
+
+## Constraints
+
+- Original code only — **no** `tesira_ttp`, **no** `pytesira`.
+- Not the Trane Nexia thermostat integration.
+- **Never** add Cursor as git co-author or contributor.
+
+## Code layout
+
+- `tesira_client.py` — async SSH/Telnet, SESSION setup, JSON +OK, subscribe/unsubscribe
+- `control_point.py` + `importer.py` — CSV/JSON control points
+- `block_registry.py` — block → platform mapping (v1 set only)
+- `coordinator.py` + `send_command` service
+- Mock: `docker/tesira-mock/`, tests in `tests/`
+
+Pattern reference: Shaffer-Softworks/biamp-nexia (different protocol).
+
+## Repo
+
+- Remote: `sickkick/Biamp-Tesira`; manifest points at `Shaffer-Softworks/biamp-tesira`
+- CI: pytest needs `homeassistant` + `voluptuous`; HACS needs GitHub description + topics
+- Full notes: `docs/PROJECT_CONTEXT.md`, HACS PR: `docs/HACS_DEFAULT.md`
+
+## Brand
+
+Regenerate: `python3 scripts/generate_brand_assets.py` (source wordmark in `brand/_source_biamp_wordmark.png`).

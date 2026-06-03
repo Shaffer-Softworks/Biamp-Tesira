@@ -16,9 +16,12 @@ from homeassistant.helpers import selector
 from .block_registry import (
     BLOCK_DEFINITIONS,
     BlockEntityConfig,
+    block_from_flow_input,
     block_type_labels,
 )
 from .const import (
+    ATTR_MATRIX_INPUT,
+    ATTR_MATRIX_OUTPUT,
     CONF_BLOCK_ENTITIES,
     CONF_CONTROL_POINTS,
     CONF_PASSWORD,
@@ -88,6 +91,36 @@ def _connection_schema(
                 CONF_SUBSCRIPTION_INTERVAL,
                 default=DEFAULT_SUBSCRIPTION_INTERVAL,
             ): vol.All(vol.Coerce(int), vol.Range(min=50, max=60000)),
+        }
+    )
+
+
+def _add_block_schema(
+    *,
+    block_options: list[selector.SelectOptionDict],
+    instance_tag_default: str = "",
+    instance_tag_choices: list[str] | None = None,
+) -> vol.Schema:
+    """Schema for adding a typed block entity."""
+    if instance_tag_choices:
+        instance_tag_field = vol.In(instance_tag_choices)
+    else:
+        instance_tag_field = str
+
+    return vol.Schema(
+        {
+            vol.Required("block_type"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=block_options)
+            ),
+            vol.Required("instance_tag", default=instance_tag_default): (
+                instance_tag_field
+            ),
+            vol.Required("name", default=""): str,
+            vol.Optional("channel", default=1): int,
+            vol.Optional(ATTR_MATRIX_INPUT): int,
+            vol.Optional(ATTR_MATRIX_OUTPUT): int,
+            vol.Optional("subscribe", default=False): bool,
+            vol.Optional("preset_id"): int,
         }
     )
 
@@ -266,51 +299,34 @@ class BiampTesiraConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_add_block(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        errors: dict[str, str] = {}
         if user_input is not None:
-            block_type = user_input["block_type"]
-            instance_tag = user_input["instance_tag"]
-            name = user_input.get("name") or f"{block_type} {instance_tag}"
-            channel = int(user_input.get("channel", 1))
-            subscribe = bool(user_input.get("subscribe", False))
-            preset_id = user_input.get("preset_id")
-            unique_id = f"{block_type}_{instance_tag}_{channel}".replace(" ", "_")
-            block = BlockEntityConfig(
-                unique_id=unique_id,
-                name=name,
-                block_type=block_type,
-                instance_tag=instance_tag,
-                channel=channel,
-                subscribe=subscribe,
-                preset_id=int(preset_id) if preset_id not in (None, "") else None,
-            )
+            try:
+                block = block_from_flow_input(user_input)
+            except ValueError as err:
+                return self.async_show_form(
+                    step_id="add_block",
+                    data_schema=self._add_block_form_schema(),
+                    errors={"base": "invalid_import"},
+                    description_placeholders={"detail": str(err)},
+                )
             self._block_entities.append(block)
             return await self.async_step_block_entity()
 
+        return self.async_show_form(
+            step_id="add_block",
+            data_schema=self._add_block_form_schema(),
+        )
+
+    def _add_block_form_schema(self) -> vol.Schema:
         block_options = [
             selector.SelectOptionDict(value=k, label=v)
             for k, v in block_type_labels()
         ]
         alias_options = self._aliases or ["Level1"]
-        schema = vol.Schema(
-            {
-                vol.Required("block_type"): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=block_options)
-                ),
-                vol.Required(
-                    "instance_tag",
-                    default=alias_options[0] if alias_options else "",
-                ): vol.In(alias_options) if alias_options else str,
-                vol.Required("name", default=""): str,
-                vol.Optional("channel", default=1): int,
-                vol.Optional("subscribe", default=False): bool,
-                vol.Optional("preset_id"): int,
-            }
-        )
-        return self.async_show_form(
-            step_id="add_block",
-            data_schema=schema,
-            errors=errors,
+        return _add_block_schema(
+            block_options=block_options,
+            instance_tag_default=alias_options[0] if alias_options else "",
+            instance_tag_choices=alias_options if alias_options else None,
         )
 
     def _apply_connection_input(self, user_input: dict[str, Any]) -> None:
@@ -424,22 +440,15 @@ class BiampTesiraOptionsFlowHandler(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is not None:
-            block_type = user_input["block_type"]
-            instance_tag = user_input["instance_tag"]
-            name = user_input.get("name") or f"{block_type} {instance_tag}"
-            channel = int(user_input.get("channel", 1))
-            subscribe = bool(user_input.get("subscribe", False))
-            preset_id = user_input.get("preset_id")
-            unique_id = f"{block_type}_{instance_tag}_{channel}".replace(" ", "_")
-            block = BlockEntityConfig(
-                unique_id=unique_id,
-                name=name,
-                block_type=block_type,
-                instance_tag=instance_tag,
-                channel=channel,
-                subscribe=subscribe,
-                preset_id=int(preset_id) if preset_id not in (None, "") else None,
-            )
+            try:
+                block = block_from_flow_input(user_input)
+            except ValueError as err:
+                return self.async_show_form(
+                    step_id="add_block",
+                    data_schema=self._add_block_form_schema(),
+                    errors={"base": "invalid_import"},
+                    description_placeholders={"detail": str(err)},
+                )
             blocks = list(self.config_entry.options.get(CONF_BLOCK_ENTITIES, []))
             blocks.append(block.to_dict())
             return self.async_create_entry(
@@ -449,23 +458,17 @@ class BiampTesiraOptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
+        return self.async_show_form(
+            step_id="add_block",
+            data_schema=self._add_block_form_schema(),
+        )
+
+    def _add_block_form_schema(self) -> vol.Schema:
         block_options = [
             selector.SelectOptionDict(value=k, label=v.label)
             for k, v in BLOCK_DEFINITIONS.items()
         ]
-        schema = vol.Schema(
-            {
-                vol.Required("block_type"): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=block_options)
-                ),
-                vol.Required("instance_tag"): str,
-                vol.Required("name", default=""): str,
-                vol.Optional("channel", default=1): int,
-                vol.Optional("subscribe", default=False): bool,
-                vol.Optional("preset_id"): int,
-            }
-        )
-        return self.async_show_form(step_id="add_block", data_schema=schema)
+        return _add_block_schema(block_options=block_options)
 
     def _options_schema(self) -> vol.Schema:
         return vol.Schema(
