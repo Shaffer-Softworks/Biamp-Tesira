@@ -1,0 +1,7 @@
+# Default configuration for Home Assistant
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.biamp_tesira: debug

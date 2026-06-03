@@ -1,0 +1,12 @@
+send_command:
+  fields:
+    command:
+      required: true
+      example: "Level1 get level 1"
+      selector:
+        text:
+    host:
+      required: false
+      example: "192.168.1.50"
+      selector:
+        text:

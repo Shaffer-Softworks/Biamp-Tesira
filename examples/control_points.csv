@@ -1,0 +1,4 @@
+name,instance_tag,command,attribute,index1,index2,entity_type,min,max,unit,preset
+Living Room Level,Level1,get,level,1,,number,-100,20,dB,
+Mic Mute,Mute1,get,mute,1,,switch,,,,
+Meeting Preset,DEVICE,get,preset,,,button,,,,1001

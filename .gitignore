@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+.idea/
+.vscode/
+.env
+
+config/.storage/
+config/deps/
+config/tts/
+config/home-assistant_v2.db*
+config/home-assistant.log*
+config/.ha_run.lock
+config/secrets.yaml

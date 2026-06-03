@@ -1,0 +1,64 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Biamp Tesira",
+        "description": "Choose how to find your Tesira DSP on the network."
+      },
+      "manual": {
+        "title": "Connect to Tesira",
+        "description": "Enter connection details. Enable SSH or Telnet on the Tesira device (SSH is recommended)."
+      },
+      "discovery": {
+        "title": "Discover Tesira",
+        "description": "UDP discovery on port 12000. Select a host or enter an IP manually.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "import": {
+        "title": "Control points (optional)",
+        "description": "Paste CSV or JSON control points from your Tesira layout, or leave empty."
+      },
+      "block_entity": {
+        "title": "Block entities (optional)",
+        "description": "Add typed entities (level, mute, logic, etc.). Known aliases: {aliases}"
+      },
+      "add_block": {
+        "title": "Add block entity",
+        "description": "Map a Tesira instance tag to a Home Assistant entity."
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect or validate TTP session.",
+      "discovery_failed": "No devices answered UDP discovery. Enter the IP manually.",
+      "invalid_import": "Could not parse import: {detail}"
+    },
+    "abort": {
+      "already_configured": "This Tesira is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Biamp Tesira options",
+        "description": "Polling interval, subscription interval, re-import control points, or add block entities."
+      },
+      "add_block": {
+        "title": "Add block entity",
+        "description": "Map a Tesira block to a Home Assistant entity."
+      }
+    },
+    "error": {
+      "invalid_import": "Could not parse import: {detail}"
+    }
+  },
+  "selector": {
+    "protocol": {
+      "options": {
+        "ssh": "SSH (recommended)",
+        "telnet": "Telnet"
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+# Home Assistant dev environment with biamp_tesira mounted from this repo.
+#
+# Usage:
+#   cp .env.example .env
+#   docker compose up -d
+#   open http://localhost:8123
+#
+# With mock Tesira (no hardware):
+#   docker compose --profile mock up -d
+#   Add integration → host: tesira-mock, protocol: telnet, port: 23
+
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: biamp-tesira-ha
+    volumes:
+      - ./config:/config
+      - ./custom_components:/config/custom_components:ro
+    environment:
+      - TZ=${TZ:-UTC}
+    ports:
+      - "${HA_PORT:-8123}:8123"
+    restart: unless-stopped
+    networks:
+      - ha_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  tesira-mock:
+    profiles: ["mock"]
+    build:
+      context: ./docker/tesira-mock
+    container_name: biamp-tesira-mock
+    ports:
+      - "${TESIRA_MOCK_PORT:-2323}:23"
+    restart: unless-stopped
+    networks:
+      - ha_net
+
+networks:
+  ha_net:
+    driver: bridge

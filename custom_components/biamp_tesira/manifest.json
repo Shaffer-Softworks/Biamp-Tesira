@@ -1,0 +1,12 @@
+{
+  "domain": "biamp_tesira",
+  "name": "Biamp Tesira",
+  "codeowners": ["@Shaffer-Softworks"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/Shaffer-Softworks/biamp-tesira",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Shaffer-Softworks/biamp-tesira/issues",
+  "requirements": ["asyncssh>=2.14.0"],
+  "version": "0.1.0"
+}
