@@ -53,7 +53,7 @@ class BiampTesiraCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             BlockEntityConfig.from_dict(be)
             for be in entry.options.get(CONF_BLOCK_ENTITIES, [])
         ]
-        self._subscribed: set[str] = set()
+        self._subscribed: set[str] = set[str]()
         poll = entry.options.get(CONF_POLL_INTERVAL, 30)
         self.subscription_interval = entry.options.get(
             CONF_SUBSCRIPTION_INTERVAL, DEFAULT_SUBSCRIPTION_INTERVAL

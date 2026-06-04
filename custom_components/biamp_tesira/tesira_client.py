@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-import json
+import importlib
 import logging
 import re
 from collections.abc import Awaitable, Callable
@@ -171,7 +171,7 @@ class TesiraClient:
 
     async def _connect_ssh_unlocked(self) -> None:
         try:
-            import asyncssh
+            asyncssh = importlib.import_module("asyncssh")
         except ImportError as err:
             raise ConnectionError("asyncssh is required for SSH") from err
 

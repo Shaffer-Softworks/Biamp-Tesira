@@ -59,4 +59,4 @@ async def async_discover_devices(
             sock.close()
 
     await asyncio.get_running_loop().run_in_executor(None, _probe)
-    return list(found.values())
+    return list[DiscoveredDevice](found.values())
