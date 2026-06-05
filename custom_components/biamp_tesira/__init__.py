@@ -38,8 +38,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.client.connect()
         await coordinator.client.get_aliases()
         await coordinator.async_setup_subscriptions()
-        if coordinator.control_points or coordinator.block_entities:
-            await coordinator.async_config_entry_first_refresh()
+        await coordinator.async_config_entry_first_refresh()
     except (ConnectionError, TimeoutError, OSError) as err:
         await coordinator.client.disconnect()
         raise ConfigEntryNotReady(

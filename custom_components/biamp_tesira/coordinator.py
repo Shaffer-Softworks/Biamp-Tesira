@@ -81,7 +81,9 @@ class BiampTesiraCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             ) -> None:
                 value = data.get("value")
                 if value is not None:
-                    self.async_set_updated_data({**self.data, uid: value})
+                    self.async_set_updated_data(
+                        {**(self.data or {}), uid: value}
+                    )
 
             if token in self._subscribed:
                 continue
@@ -105,7 +107,7 @@ class BiampTesiraCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch current values."""
-        data: dict[str, Any] = dict(self.data)
+        data: dict[str, Any] = dict(self.data or {})
         errors: list[str] = []
 
         for point in self.control_points:
@@ -154,7 +156,12 @@ class BiampTesiraCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not response.ok:
             raise RuntimeError(response.error or response.raw)
         self.async_set_updated_data(
-            {**self.data, point.unique_id: response.value if response.value is not None else value}
+            {
+                **(self.data or {}),
+                point.unique_id: (
+                    response.value if response.value is not None else value
+                ),
+            }
         )
 
     async def async_set_block_value(
@@ -165,7 +172,12 @@ class BiampTesiraCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not response.ok:
             raise RuntimeError(response.error or response.raw)
         self.async_set_updated_data(
-            {**self.data, block.unique_id: response.value if response.value is not None else value}
+            {
+                **(self.data or {}),
+                block.unique_id: (
+                    response.value if response.value is not None else value
+                ),
+            }
         )
 
     async def async_recall_preset(self, point: ControlPoint) -> None:

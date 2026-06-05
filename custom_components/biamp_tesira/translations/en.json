@@ -3,33 +3,74 @@
     "step": {
       "user": {
         "title": "Biamp Tesira",
-        "description": "Choose how to find your Tesira DSP on the network."
+        "description": "How would you like to find your Tesira DSP?",
+        "data": {
+          "method": "Connection method"
+        }
       },
       "manual": {
         "title": "Connect to Tesira",
-        "description": "Enter connection details. Enable SSH or Telnet on the Tesira device (SSH is recommended)."
+        "description": "Enter the IP address and protocol. SSH is recommended; enable SSH or Telnet in Tesira Composer or the device web UI.",
+        "data": {
+          "host": "Host or IP address",
+          "protocol": "Protocol",
+          "port": "Port",
+          "username": "SSH username",
+          "password": "SSH password"
+        }
       },
       "discovery": {
-        "title": "Discover Tesira",
-        "description": "UDP discovery on port 12000. Select a host or enter an IP manually."
+        "title": "Discovered Tesira devices",
+        "description": "Select a device and confirm the connection settings.",
+        "data": {
+          "host": "Device",
+          "protocol": "Protocol",
+          "port": "Port",
+          "username": "SSH username",
+          "password": "SSH password"
+        }
+      },
+      "entities_menu": {
+        "title": "Set up entities",
+        "description": "**{device_name}** is connected.\n\nBlocks found on the device: {aliases}\n\nCurrently configured: {block_count} block entity(ies), {control_point_count} imported control point(s).\n\nYou can add entities now or finish and configure them later under integration options.",
+        "menu_options": {
+          "finish": "Finish setup",
+          "add_block": "Add a block entity",
+          "import": "Import control points (CSV/JSON)"
+        }
       },
       "import": {
-        "title": "Control points (optional)",
-        "description": "Paste CSV or JSON control points from your Tesira layout, or leave empty."
-      },
-      "block_entity": {
-        "title": "Block entities (optional)",
-        "description": "Add typed entities (level, mute, logic, etc.). Known aliases: {aliases}"
+        "title": "Import control points",
+        "description": "Paste a CSV or JSON export from your Tesira layout. Leave blank to skip.",
+        "data": {
+          "import_text": "Control points"
+        }
       },
       "add_block": {
         "title": "Add block entity",
-        "description": "Map a Tesira instance tag to a Home Assistant entity."
+        "description": "Choose the entity type and Tesira block to control.",
+        "data": {
+          "block_type": "Entity type",
+          "instance_tag": "Instance tag",
+          "name": "Name in Home Assistant"
+        }
+      },
+      "add_block_details": {
+        "title": "Block settings",
+        "description": "Configure **{block_type}** indices and options.",
+        "data": {
+          "channel": "Channel number",
+          "matrix_input": "Matrix input",
+          "matrix_output": "Matrix output",
+          "subscribe": "Live updates",
+          "preset_id": "Preset number"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Could not connect or validate TTP session.",
-      "discovery_failed": "No devices answered UDP discovery. Enter the IP manually.",
-      "invalid_import": "Could not parse import: {detail}"
+      "cannot_connect": "Could not connect. Check the IP, protocol, port, and that SSH or Telnet is enabled on the Tesira.",
+      "discovery_failed": "No Tesira devices found on the network. Try entering the IP address manually.",
+      "invalid_import": "Could not parse the import: {detail}"
     },
     "abort": {
       "already_configured": "This Tesira is already configured."
@@ -39,15 +80,45 @@
     "step": {
       "init": {
         "title": "Biamp Tesira options",
-        "description": "Polling interval, subscription interval, re-import control points, or add block entities."
+        "description": "Poll every {poll_interval} s · Live updates every {subscription_interval} ms\n\n{block_count} block entity(ies) · {control_point_count} imported control point(s)",
+        "menu_options": {
+          "timing": "Polling and live updates",
+          "import_control_points": "Import control points",
+          "add_block": "Add a block entity"
+        }
+      },
+      "timing": {
+        "title": "Polling and live updates",
+        "description": "How often Home Assistant refreshes entity state. Live updates use TTP subscriptions where supported.",
+        "data": {
+          "poll_interval": "Poll interval (seconds)",
+          "subscription_interval": "Live update interval (milliseconds)"
+        }
+      },
+      "import_control_points": {
+        "title": "Import control points",
+        "description": "Replace the current import ({control_point_count} control point(s)) with CSV or JSON from your Tesira layout.",
+        "data": {
+          "import_text": "Control points"
+        }
       },
       "add_block": {
         "title": "Add block entity",
-        "description": "Map a Tesira block to a Home Assistant entity."
+        "description": "Map a Tesira block to a new Home Assistant entity.",
+        "data": {
+          "block_type": "Entity type",
+          "instance_tag": "Instance tag",
+          "name": "Name in Home Assistant",
+          "channel": "Channel number",
+          "matrix_input": "Matrix input",
+          "matrix_output": "Matrix output",
+          "subscribe": "Live updates",
+          "preset_id": "Preset number"
+        }
       }
     },
     "error": {
-      "invalid_import": "Could not parse import: {detail}"
+      "invalid_import": "Could not parse the import: {detail}"
     }
   },
   "selector": {

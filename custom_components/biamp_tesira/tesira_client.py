@@ -20,6 +20,9 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+_asyncssh: Any | None = None
+_asyncssh_lock = asyncio.Lock()
+
 _LINE_END = b"\n"
 _IAC = 0xFF
 
@@ -170,10 +173,7 @@ class TesiraClient:
         await self._drain_pending(timeout=0.5)
 
     async def _connect_ssh_unlocked(self) -> None:
-        try:
-            asyncssh = importlib.import_module("asyncssh")
-        except ImportError as err:
-            raise ConnectionError("asyncssh is required for SSH") from err
+        asyncssh = await _get_asyncssh()
 
         try:
             self._ssh_conn = await asyncio.wait_for(
@@ -443,6 +443,23 @@ def _strip_iac(data: bytes) -> bytes:
 
 def _decode_line(raw: bytes) -> str:
     return raw.decode("ascii", errors="replace").strip("\r")
+
+
+async def _get_asyncssh() -> Any:
+    """Load asyncssh in a worker thread (import does blocking filesystem I/O)."""
+    global _asyncssh
+    if _asyncssh is not None:
+        return _asyncssh
+    async with _asyncssh_lock:
+        if _asyncssh is not None:
+            return _asyncssh
+        try:
+            _asyncssh = await asyncio.to_thread(
+                importlib.import_module, "asyncssh"
+            )
+        except ImportError as err:
+            raise ConnectionError("asyncssh is required for SSH") from err
+    return _asyncssh
 
 
 def _quote_tag(instance_tag: str) -> str:
