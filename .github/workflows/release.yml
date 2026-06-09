@@ -158,5 +158,5 @@ jobs:
           fi
 
           if [ "${HAS_WORKFLOW_PAT}" != "true" ]; then
-            gh workflow run validate.yaml --ref "$BRANCH"
+            gh workflow run validate.yaml --ref "$DEFAULT_BRANCH" -f ref="$BRANCH"
           fi
