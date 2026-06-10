@@ -367,6 +367,12 @@ class BiampTesiraConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             },
         )
 
+    async def async_step_finish(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Finish setup and create the config entry."""
+        return self._create_entry()
+
     def _discovery_schema(self) -> vol.Schema:
         if self._discovered_hosts:
             default_port = (
