@@ -280,7 +280,7 @@ class BiampTesiraConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Choose how to add Home Assistant entities, or finish setup."""
         if user_input is not None:
             if user_input["next"] == "finish":
-                return self._create_entry()
+                return await self._create_entry()
             if user_input["next"] == "add_block":
                 return await self.async_step_add_block()
             if user_input["next"] == "import":
@@ -371,7 +371,7 @@ class BiampTesiraConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Finish setup and create the config entry."""
-        return self._create_entry()
+        return await self._create_entry()
 
     def _discovery_schema(self) -> vol.Schema:
         if self._discovered_hosts:
