@@ -144,15 +144,15 @@ jobs:
           fi
 
           if [ "$(gh pr list --head "$BRANCH" --state open --json number -q 'length')" -eq 0 ]; then
-            if [ "${HAS_WORKFLOW_PAT}" = "true" ]; then
-              gh pr create \
-                --base "$DEFAULT_BRANCH" \
-                --head "$BRANCH" \
-                --title "Merge ${TAG} manifest bump" \
-                --body "Automated manifest bump for [${TAG}](https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}). Merge after checks pass."
+            PR_URL="https://github.com/${GITHUB_REPOSITORY}/compare/${DEFAULT_BRANCH}...${BRANCH}?expand=1"
+            if gh pr create \
+              --base "$DEFAULT_BRANCH" \
+              --head "$BRANCH" \
+              --title "Merge ${TAG} manifest bump" \
+              --body "Automated manifest bump for [${TAG}](https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}). Merge after checks pass."; then
+              echo "::notice::Opened manifest bump PR for ${TAG}."
             else
-              PR_URL="https://github.com/${GITHUB_REPOSITORY}/compare/${DEFAULT_BRANCH}...${BRANCH}?expand=1"
-              echo "::notice::GitHub Actions cannot create pull requests in this repository without WORKFLOW_TRIGGER_TOKEN. Open the manifest bump PR manually: ${PR_URL}"
+              echo "::warning::Could not create the manifest bump PR automatically. Open it manually: ${PR_URL}"
               echo "Open the manifest bump PR manually: ${PR_URL}" >> "$GITHUB_STEP_SUMMARY"
             fi
           fi
