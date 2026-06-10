@@ -433,9 +433,10 @@ class BiampTesiraConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._username = user_input.get(CONF_USERNAME, DEFAULT_USERNAME)
         self._password = user_input.get(CONF_PASSWORD, "")
 
-    def _create_entry(self) -> FlowResult:
+    async def _create_entry(self) -> FlowResult:
         assert self._host is not None
-        self.async_set_unique_id(self._host.lower())
+
+        await self.async_set_unique_id(self._host.lower())
         self._abort_if_unique_id_configured()
 
         return self.async_create_entry(
